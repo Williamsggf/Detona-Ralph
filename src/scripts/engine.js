@@ -122,18 +122,18 @@ function saveScore(nome, level, score) {
 
 // Exibe a lista de pontuações
 function displayScores() {
-    fetch('https://app-gestao-backend.vercel.app/auth/ScoresDR')
-        .then(response => response.json())
-        .then(scores => {
-            const scoresList = document.getElementById("scores-list");
-            scoresList.innerHTML = ""; // Limpa a lista atual
-            scores.forEach(scores => {
-                const listItem = document.createElement("li");
-                listItem.textContent = `ID_registro: ${scores.id}, Nome: ${scores.nome},  Nível: ${scores.level}, Pontuação: ${scores.score}`;
-                scoresList.appendChild(listItem);
-            });
-        })
-        .catch(error => console.error('Erro ao carregar as pontuações:', error));
+	fetch('https://app-gestao-backend.vercel.app/auth/ScoresDR', { cache: 'no-cache' })
+	.then(response => response.json())
+    .then(scores => {
+        const scoresList = document.getElementById("scores-list");
+        scoresList.innerHTML = ""; // Limpa a lista atual
+        scores.forEach(score => {
+            const listItem = document.createElement("li");
+            listItem.textContent = `ID_registro: ${score.id}, Nome: ${score.nome},  Nível: ${score.level}, Pontuação: ${score.score}`;
+            scoresList.appendChild(listItem);
+        });
+    })
+    .catch(error => console.error('Erro ao carregar as pontuações:', error));
 }
 
 // Função de término de jogo
