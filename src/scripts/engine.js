@@ -84,7 +84,7 @@ function addListenerHitBox() {
 
 function newLevel() {
     if (state.values.lives >= 0) {
-        state.values.gameVelocity = Math.max(300, state.values.gameVelocity - 300);
+        state.values.gameVelocity = Math.max(500, state.values.gameVelocity - 300);
         state.values.level += 1;
         state.view.level.textContent = state.values.level;
         state.values.pontAcert = 1 + state.values.level;
