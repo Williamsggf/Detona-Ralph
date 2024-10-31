@@ -70,6 +70,10 @@ footer {
     padding: 10px;
 }
 
+.scores {
+    color: #ffffff;
+}
+
 /* Responsivo para telas menores que 768px (tamanho comum para celular) */
 @media (max-width: 768px) {
     .container {
