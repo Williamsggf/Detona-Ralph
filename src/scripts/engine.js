@@ -101,8 +101,8 @@ function newLevel() {
 }
 
 // Função para salvar a pontuação do jogador
-function saveScore(name, level, score) {
-    const scoreData = { name, level, score };
+function saveScore(nome, level, score) {
+    const scoreData = { nome, level, score };
 
     fetch('https://app-gestao-backend.vercel.app/auth/ScoresDR', {
         method: 'POST',
@@ -129,7 +129,7 @@ function displayScores() {
             scoresList.innerHTML = ""; // Limpa a lista atual
             scores.forEach(score => {
                 const listItem = document.createElement("li");
-                listItem.textContent = `Nome: ${score.name}, Pontuação: ${score.score}, Nível: ${score.level}`;
+                listItem.textContent = `Nome: ${score.nome}, Pontuação: ${score.score}, Nível: ${score.level}`;
                 scoresList.appendChild(listItem);
             });
         })
