@@ -127,9 +127,9 @@ function displayScores() {
         .then(scores => {
             const scoresList = document.getElementById("scores-list");
             scoresList.innerHTML = ""; // Limpa a lista atual
-            scores.forEach(score => {
+            scores.forEach(scores => {
                 const listItem = document.createElement("li");
-                listItem.textContent = `Nome: ${score.nome}, Pontuação: ${score.score}, Nível: ${score.level}`;
+                listItem.textContent = `ID_registro: ${scores.id}, Nome: ${scores.nome},  Nível: ${scores.level}, Pontuação: ${scores.score}`;
                 scoresList.appendChild(listItem);
             });
         })
