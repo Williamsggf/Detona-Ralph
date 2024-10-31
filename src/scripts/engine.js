@@ -133,14 +133,14 @@ function displayScores() {
                 // Caso o retorno seja uma lista de pontuações
                 data.forEach(score => {
                     const listItem = document.createElement("li");
-                    listItem.textContent = `ID_registro: ${score.id}, Nome: ${score.nome}, Nível: ${score.level}, Pontuação: ${score.score}`;
+                    listItem.textContent = `Nome: ${score.nome}, Nível: ${score.level}, Pontuação: ${score.score}`;
                     scoresList.appendChild(listItem);
                 });
             } else if (data.scores) {
                 // Caso o retorno seja um único objeto
                 const score = data.scores;
                 const listItem = document.createElement("li");
-                listItem.textContent = `ID_registro: ${score.id}, Nome: ${score.nome}, Nível: ${score.level}, Pontuação: ${score.score}`;
+                listItem.textContent = `Nome: ${score.nome}, Nível: ${score.level}, Pontuação: ${score.score}`;
                 scoresList.appendChild(listItem);
             }
         })
