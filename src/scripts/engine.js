@@ -122,18 +122,29 @@ function saveScore(nome, level, score) {
 
 // Exibe a lista de pontuações
 function displayScores() {
-	fetch('https://app-gestao-backend.vercel.app/auth/ScoresDR', { cache: 'no-cache' })
-	.then(response => response.json())
-    .then(scores => {
-        const scoresList = document.getElementById("scores-list");
-        scoresList.innerHTML = ""; // Limpa a lista atual
-        scores.forEach(score => {
-            const listItem = document.createElement("li");
-            listItem.textContent = `ID_registro: ${score.id}, Nome: ${score.nome},  Nível: ${score.level}, Pontuação: ${score.score}`;
-            scoresList.appendChild(listItem);
-        });
-    })
-    .catch(error => console.error('Erro ao carregar as pontuações:', error));
+    fetch('https://app-gestao-backend.vercel.app/auth/ScoresDR')
+        .then(response => response.json())
+        .then(data => {
+            const scoresList = document.getElementById("scores-list");
+            scoresList.innerHTML = ""; // Limpa a lista atual
+
+            // Verifica se a resposta contém um único objeto ou uma lista
+            if (Array.isArray(data)) {
+                // Caso o retorno seja uma lista de pontuações
+                data.forEach(score => {
+                    const listItem = document.createElement("li");
+                    listItem.textContent = `ID_registro: ${score.id}, Nome: ${score.nome}, Nível: ${score.level}, Pontuação: ${score.score}`;
+                    scoresList.appendChild(listItem);
+                });
+            } else if (data.scores) {
+                // Caso o retorno seja um único objeto
+                const score = data.scores;
+                const listItem = document.createElement("li");
+                listItem.textContent = `ID_registro: ${score.id}, Nome: ${score.nome}, Nível: ${score.level}, Pontuação: ${score.score}`;
+                scoresList.appendChild(listItem);
+            }
+        })
+        .catch(error => console.error('Erro ao carregar as pontuações:', error));
 }
 
 // Função de término de jogo
