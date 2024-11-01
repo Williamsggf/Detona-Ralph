@@ -77,7 +77,7 @@ function addListenerHitBox() {
                 state.values.hitPosition = null;
                 state.values.contErros = 0;
                 playSound('hit.m4a');
-                randomSquare();
+                removeEnemy();
             } else {
                 state.values.lives--;
                 state.view.lives.textContent = state.values.lives;
