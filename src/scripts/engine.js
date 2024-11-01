@@ -77,7 +77,7 @@ function addListenerHitBox() {
                 state.values.hitPosition = null;
                 state.values.contErros = 0;
                 playSound('hit.m4a');
-                removeEnemy();
+                randomSquare();
             } else {
                 state.values.lives--;
                 state.view.lives.textContent = state.values.lives;
@@ -116,8 +116,18 @@ function saveScore(nome, level, score) {
     .then(data => {
         alert("Pontuação salva com sucesso!");
         displayScores(); // Atualiza a lista de pontuações
+
+        // Função para recarregar a página após salvar o score
+        reloadPage();
     })
     .catch(error => console.error('Erro ao salvar a pontuação:', error));
+}
+
+// Função para recarregar a página
+function reloadPage() {
+    setTimeout(() => {
+        location.reload();
+    }, 1000); // Espera um segundo antes de recarregar para garantir que o alert seja exibido
 }
 
 // Exibe a lista de pontuações
@@ -136,10 +146,8 @@ function displayScores() {
             // Verifica se a resposta contém uma lista de pontuações
             if (Array.isArray(data.scores) && data.scores.length > 0) {
                 data.scores.forEach(score => {
-                    // Cria uma nova linha de tabela
                     const row = document.createElement("tr");
 
-                    // Cria e insere as células de nome, nível e pontuação
                     const nameCell = document.createElement("td");
                     nameCell.textContent = score.nome;
 
@@ -149,12 +157,10 @@ function displayScores() {
                     const scoreCell = document.createElement("td");
                     scoreCell.textContent = score.score;
 
-                    // Adiciona as células à linha
                     row.appendChild(nameCell);
                     row.appendChild(levelCell);
                     row.appendChild(scoreCell);
 
-                    // Adiciona a linha ao corpo da tabela
                     scoresTableBody.appendChild(row);
                 });
             } else {
@@ -167,7 +173,6 @@ function displayScores() {
 
 // Chama a função para carregar as pontuações quando a página carregar
 window.addEventListener('load', displayScores);
-
 
 // Função de término de jogo
 function gameOver() {
@@ -182,17 +187,13 @@ function gameOver() {
 
     // Reseta o estado do jogo
     state.values.lives = 3;
-    state.values.curretTime = 30;
     state.values.level = 1;
     state.values.result = 0;
     state.values.contErros = 0;
 
     state.view.lives.textContent = state.values.lives;
-    state.view.timeLeft.textContent = state.values.curretTime;
     state.view.score.textContent = state.values.result;
     state.view.level.textContent = state.values.level;
-
-    moveEnemy(); // Reinicia o movimento do inimigo
 }
 
 // Inicialização do jogo
