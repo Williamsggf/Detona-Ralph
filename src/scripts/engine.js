@@ -14,7 +14,7 @@ const state = {
         hitPosition: 0,
         result: 0,
         pontAcert: 1,
-        currentTime: 30, // Corrigido de curretTime para currentTime
+        currentTime: 30, 
         lives: 3,
         level: 1,
         contErros: 0,
@@ -194,7 +194,10 @@ function displayScores() {
 window.addEventListener('load', displayScores);
 
 function gameOver() {
+    // Limpa o intervalo do contador de tempo e do movimento do inimigo
     clearInterval(state.values.timeid);
+    clearInterval(state.values.timerId);
+    
     alert(`Game Over! Você chegou no level: ${state.values.level} com pontuação de ${state.values.result} pontos`);
 
     const playerName = prompt("Digite seu nome para salvar sua pontuação:");
@@ -225,15 +228,18 @@ function startGame() {
     displayScores();
     moveEnemy();
     addListenerHitBox();
-	addKeyboardListenerHitBox();
+    addKeyboardListenerHitBox();
     
-    if (!state.values.timeid) {
-        state.values.timeid = setInterval(countDown, 1000);
+    // Inicia o contador de tempo uma única vez
+    if (!state.values.timerId) {
+        state.values.timerId = setInterval(countDown, 1000);
     }
 
     state.view.startButton.disabled = true;
     document.getElementById("Modal").style.display = "none";
 }
+
+state.view.startButton.addEventListener("click", startGame);
 
 state.view.startButton.addEventListener("click", startGame);
 
