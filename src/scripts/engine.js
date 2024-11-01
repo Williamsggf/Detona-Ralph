@@ -104,7 +104,7 @@ function newLevel() {
 function saveScore(nome, level, score) {
     const scoreData = { nome, level, score };
 
-    fetch('https://app-gestao-backend.vercel.app/auth/ScoresDR', {
+    fetch('https://app-gestao-backend.vercel.app/auth/RscoresDR', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(scoreData)
@@ -122,30 +122,52 @@ function saveScore(nome, level, score) {
 
 // Exibe a lista de pontuações
 function displayScores() {
-    fetch('https://app-gestao-backend.vercel.app/auth/ScoresDR')
-        .then(response => response.json())
+    fetch('https://app-gestao-backend.vercel.app/auth/CscoresDR')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Erro na resposta da rede.");
+            }
+            return response.json();
+        })
         .then(data => {
-            const scoresList = document.getElementById("scores-list");
-            scoresList.innerHTML = ""; // Limpa a lista atual
+            const scoresTableBody = document.getElementById("scores-table").querySelector("tbody");
+            scoresTableBody.innerHTML = ""; // Limpa o conteúdo atual do tbody
 
-            // Verifica se a resposta contém um único objeto ou uma lista
-            if (Array.isArray(data)) {
-                // Caso o retorno seja uma lista de pontuações
-                data.forEach(score => {
-                    const listItem = document.createElement("li");
-                    listItem.textContent = `Nome: ${score.nome}, Nível: ${score.level}, Pontuação: ${score.score}`;
-                    scoresList.appendChild(listItem);
+            // Verifica se a resposta contém uma lista de pontuações
+            if (Array.isArray(data.scores) && data.scores.length > 0) {
+                data.scores.forEach(score => {
+                    // Cria uma nova linha de tabela
+                    const row = document.createElement("tr");
+
+                    // Cria e insere as células de nome, nível e pontuação
+                    const nameCell = document.createElement("td");
+                    nameCell.textContent = score.nome;
+
+                    const levelCell = document.createElement("td");
+                    levelCell.textContent = score.level;
+
+                    const scoreCell = document.createElement("td");
+                    scoreCell.textContent = score.score;
+
+                    // Adiciona as células à linha
+                    row.appendChild(nameCell);
+                    row.appendChild(levelCell);
+                    row.appendChild(scoreCell);
+
+                    // Adiciona a linha ao corpo da tabela
+                    scoresTableBody.appendChild(row);
                 });
-            } else if (data.scores) {
-                // Caso o retorno seja um único objeto
-                const score = data.scores;
-                const listItem = document.createElement("li");
-                listItem.textContent = `Nome: ${score.nome}, Nível: ${score.level}, Pontuação: ${score.score}`;
-                scoresList.appendChild(listItem);
+            } else {
+                console.error("Nenhuma pontuação disponível:", data);
+                scoresTableBody.innerHTML = "<tr><td colspan='3'>Nenhuma pontuação encontrada.</td></tr>";
             }
         })
         .catch(error => console.error('Erro ao carregar as pontuações:', error));
 }
+
+// Chama a função para carregar as pontuações quando a página carregar
+window.addEventListener('load', displayScores);
+
 
 // Função de término de jogo
 function gameOver() {

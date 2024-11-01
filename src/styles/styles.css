@@ -72,7 +72,26 @@ footer {
 
 .scores {
     color: #ffffff;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
 }
+
+.scores-table{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+table { width: 50%; margin: 20px auto; border-collapse: collapse; }
+th, td { border: 1px solid #ddd; padding: 8px; }
+input[type="number"] { width: 80px; }
+.center { text-align: center; }
+
 
 /* Responsivo para telas menores que 768px (tamanho comum para celular) */
 @media (max-width: 768px) {
