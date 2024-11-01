@@ -62,13 +62,11 @@ function randomSquare() {
     }
 }
 
-// Função para mover o inimigo em intervalos definidos
 function moveEnemy() {
     clearInterval(state.values.timeid);
     state.values.timeid = setInterval(randomSquare, state.values.gameVelocity);
 }
 
-// Adiciona escutadores de eventos para detectar acertos
 function addListenerHitBox() {
     state.view.squares.forEach((square) => {
         square.addEventListener("mousedown", () => {
@@ -88,6 +86,30 @@ function addListenerHitBox() {
         });
     });
 }
+
+function addKeyboardListenerHitBox() {
+    document.addEventListener("keydown", (event) => {
+        const keyPressed = event.key;
+        const squareHitPosition = state.values.hitPosition; 
+
+        if (keyPressed === squareHitPosition) {
+            // Acerto: tecla pressionada corresponde à posição do inimigo
+            state.values.result += state.values.pontAcert;
+            state.view.score.textContent = state.values.result;
+            state.values.hitPosition = null;
+            state.values.contErros = 0;
+            playSound('hit.m4a');
+            removeEnemy();
+        } else {
+            // Erro: tecla pressionada não corresponde à posição do inimigo
+            state.values.lives--;
+            state.view.lives.textContent = state.values.lives;
+            if (state.values.lives <= 0) gameOver();
+            playSound("buzzer.mp3");
+        }
+    });
+}
+
 
 // Aumenta a dificuldade a cada novo nível
 function newLevel() {
@@ -169,10 +191,8 @@ function displayScores() {
         .catch(error => console.error('Erro ao carregar as pontuações:', error));
 }
 
-// Chama a função para carregar as pontuações quando a página carregar
 window.addEventListener('load', displayScores);
 
-// Função de término de jogo
 function gameOver() {
     clearInterval(state.values.timeid);
     alert(`Game Over! Você chegou no level: ${state.values.level} com pontuação de ${state.values.result} pontos`);
@@ -196,7 +216,6 @@ function gameOver() {
     state.view.level.textContent = state.values.level;
 }
 
-// Função de inicialização do jogo ao clicar no botão "Start"
 function startGame() {
     state.view.timeLeft.textContent = state.values.currentTime;
     state.view.lives.textContent = state.values.lives;
@@ -206,8 +225,8 @@ function startGame() {
     displayScores();
     moveEnemy();
     addListenerHitBox();
+	addKeyboardListenerHitBox();
     
-    // Inicia o contador de tempo uma única vez
     if (!state.values.timeid) {
         state.values.timeid = setInterval(countDown, 1000);
     }
@@ -216,6 +235,5 @@ function startGame() {
     document.getElementById("Modal").style.display = "none";
 }
 
-// Adiciona o evento de clique no botão "Start"
 state.view.startButton.addEventListener("click", startGame);
 
