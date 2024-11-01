@@ -6,6 +6,7 @@ const state = {
         score: document.querySelector('#score'),
         level: document.querySelector('#level'),
         lives: document.querySelector('#lives'),
+        startButton: document.getElementById('start-button') // Referência ao botão Start
     },
     values: {
         timeid: null,
@@ -13,7 +14,7 @@ const state = {
         hitPosition: 0,
         result: 0,
         pontAcert: 1,
-        curretTime: 30,
+        currentTime: 30, // Corrigido de curretTime para currentTime
         lives: 3,
         level: 1,
         contErros: 0,
@@ -29,9 +30,9 @@ function playSound(audioName) {
 
 // Contador de tempo
 function countDown() {
-    if (state.values.curretTime > 0) {
-        state.values.curretTime--;
-        state.view.timeLeft.textContent = state.values.curretTime;
+    if (state.values.currentTime > 0) {
+        state.values.currentTime--;
+        state.view.timeLeft.textContent = state.values.currentTime;
     } else {
         newLevel();
     }
@@ -47,7 +48,7 @@ function removeEnemy() {
 // Função para gerar posição aleatória do inimigo
 function randomSquare() {
     removeEnemy();
-    let randomNumber = Math.floor(Math.random() * 9);
+    let randomNumber = Math.floor(Math.random() * state.view.squares.length);
     let randomSquare = state.view.squares[randomNumber];
     randomSquare.classList.add("enemy");
     state.values.hitPosition = randomSquare.id;
@@ -57,7 +58,7 @@ function randomSquare() {
         state.values.lives--;
         state.view.lives.textContent = state.values.lives;
         state.values.contErros = 0;
-        if (state.values.lives < 0) gameOver();
+        if (state.values.lives <= 0) gameOver(); // Corrigido para <= 0
     }
 }
 
@@ -81,7 +82,7 @@ function addListenerHitBox() {
             } else {
                 state.values.lives--;
                 state.view.lives.textContent = state.values.lives;
-                if (state.values.lives < 0) gameOver();
+                if (state.values.lives <= 0) gameOver(); // Corrigido para <= 0
                 playSound("buzzer.mp3");
             }
         });
@@ -90,12 +91,12 @@ function addListenerHitBox() {
 
 // Aumenta a dificuldade a cada novo nível
 function newLevel() {
-    if (state.values.lives >= 0) {
+    if (state.values.lives > 0) {
         state.values.gameVelocity = Math.max(500, state.values.gameVelocity - 300);
         state.values.level += 1;
         state.view.level.textContent = state.values.level;
         state.values.pontAcert = 1 + state.values.level;
-        state.values.curretTime = 30;
+        state.values.currentTime = 30;
         moveEnemy();
     }
 }
@@ -115,9 +116,7 @@ function saveScore(nome, level, score) {
     })
     .then(data => {
         alert("Pontuação salva com sucesso!");
-        displayScores(); // Atualiza a lista de pontuações
-
-        // Função para recarregar a página após salvar o score
+        displayScores();
         reloadPage();
     })
     .catch(error => console.error('Erro ao salvar a pontuação:', error));
@@ -127,7 +126,7 @@ function saveScore(nome, level, score) {
 function reloadPage() {
     setTimeout(() => {
         location.reload();
-    }, 1000); // Espera um segundo antes de recarregar para garantir que o alert seja exibido
+    }, 1000);
 }
 
 // Exibe a lista de pontuações
@@ -141,9 +140,8 @@ function displayScores() {
         })
         .then(data => {
             const scoresTableBody = document.getElementById("scores-table").querySelector("tbody");
-            scoresTableBody.innerHTML = ""; // Limpa o conteúdo atual do tbody
+            scoresTableBody.innerHTML = ""; 
 
-            // Verifica se a resposta contém uma lista de pontuações
             if (Array.isArray(data.scores) && data.scores.length > 0) {
                 data.scores.forEach(score => {
                     const row = document.createElement("tr");
@@ -179,33 +177,45 @@ function gameOver() {
     clearInterval(state.values.timeid);
     alert(`Game Over! Você chegou no level: ${state.values.level} com pontuação de ${state.values.result} pontos`);
 
-    // Solicita o nome do jogador
     const playerName = prompt("Digite seu nome para salvar sua pontuação:");
     if (playerName) {
         saveScore(playerName, state.values.level, state.values.result);
     }
-
-    // Reseta o estado do jogo
+    document.getElementById("Modal").style.display = "flex";
+    state.view.startButton.disabled = false;
+	
     state.values.lives = 3;
     state.values.level = 1;
     state.values.result = 0;
     state.values.contErros = 0;
+    state.values.currentTime = 30;
 
     state.view.lives.textContent = state.values.lives;
+    state.view.timeLeft.textContent = state.values.currentTime;
     state.view.score.textContent = state.values.result;
     state.view.level.textContent = state.values.level;
 }
 
-// Inicialização do jogo
-function init() {
-    state.view.timeLeft.textContent = state.values.curretTime;
+// Função de inicialização do jogo ao clicar no botão "Start"
+function startGame() {
+    state.view.timeLeft.textContent = state.values.currentTime;
     state.view.lives.textContent = state.values.lives;
     state.view.score.textContent = state.values.result;
     state.view.level.textContent = state.values.level;
+    
     displayScores();
     moveEnemy();
     addListenerHitBox();
-    setInterval(countDown, 1000);
+    
+    // Inicia o contador de tempo uma única vez
+    if (!state.values.timeid) {
+        state.values.timeid = setInterval(countDown, 1000);
+    }
+
+    state.view.startButton.disabled = true;
+    document.getElementById("Modal").style.display = "none";
 }
 
-document.addEventListener("DOMContentLoaded", init);
+// Adiciona o evento de clique no botão "Start"
+state.view.startButton.addEventListener("click", startGame);
+
