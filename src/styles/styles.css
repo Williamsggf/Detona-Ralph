@@ -86,6 +86,34 @@ footer {
     padding: 10px;
 }
 
+.modal {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: rgba(0, 0, 0, 0.1);
+}
+
+.modal button {
+	padding: 20px 50px; 
+	border-radius: 12px;
+	background: linear-gradient(45deg, blue, red);
+	color: white; 
+	font-size: 16px;
+	border: none;
+	cursor: pointer;
+	box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+	transition: transform 0.2s ease;
+}
+
+.modal button:hover {
+	transform: scale(1.05); 
+}
+
 table { width: 50%; margin: 20px auto; border-collapse: collapse; }
 th, td { border: 1px solid #ddd; padding: 8px; }
 input[type="number"] { width: 80px; }
