@@ -90,10 +90,12 @@ function addListenerHitBox() {
 function addKeyboardListenerHitBox() {
     document.addEventListener("keydown", (event) => {
         const keyPressed = event.key;
-        const squareHitPosition = state.values.hitPosition; 
+        
+        if (!/^[1-9]$/.test(keyPressed)) return; 
+        
+        const squareHitPosition = state.values.hitPosition;
 
         if (keyPressed === squareHitPosition) {
-            // Acerto: tecla pressionada corresponde à posição do inimigo
             state.values.result += state.values.pontAcert;
             state.view.score.textContent = state.values.result;
             state.values.hitPosition = null;
@@ -101,7 +103,6 @@ function addKeyboardListenerHitBox() {
             playSound('hit.m4a');
             removeEnemy();
         } else {
-            // Erro: tecla pressionada não corresponde à posição do inimigo
             state.values.lives--;
             state.view.lives.textContent = state.values.lives;
             if (state.values.lives <= 0) gameOver();
@@ -111,11 +112,11 @@ function addKeyboardListenerHitBox() {
 }
 
 
-// Aumenta a dificuldade a cada novo nível
 function newLevel() {
     if (state.values.lives > 0) {
-        state.values.gameVelocity = Math.max(500, state.values.gameVelocity - 300);
-        state.values.level += 1;
+        const levelIncrement = state.values.lives <= 5 ? 1 : state.values.lives <= 9 ? 5 : 10;
+        state.values.gameVelocity = Math.max(500, state.values.gameVelocity - 250);
+        state.values.level += levelIncrement;
         state.view.level.textContent = state.values.level;
         state.values.pontAcert = 1 + state.values.level;
         state.values.currentTime = 30;
