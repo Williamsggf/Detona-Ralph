@@ -126,6 +126,8 @@ function newLevel() {
 
 const authToken = 'eLM4iaa2h|SM9Zp';
 
+console.log(authToken);
+
 // Função para salvar a pontuação do jogador
 function saveScore(nome, level, score) {
     const scoreData = { nome, level, score };
@@ -134,7 +136,7 @@ function saveScore(nome, level, score) {
         method: 'POST',
         headers: { 
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}` // Adiciona o token no cabeçalho
+            'Authorization': `Bearer ${authToken}`// Adiciona o token no cabeçalho
         },
         body: JSON.stringify(scoreData)
     })
