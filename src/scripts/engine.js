@@ -6,7 +6,7 @@ const state = {
         score: document.querySelector('#score'),
         level: document.querySelector('#level'),
         lives: document.querySelector('#lives'),
-        startButton: document.getElementById('start-button') // Referência ao botão Start
+        startButton: document.getElementById('start-button')
     },
     values: {
         timeid: null,
@@ -14,12 +14,22 @@ const state = {
         hitPosition: 0,
         result: 0,
         pontAcert: 1,
-        currentTime: 30, 
+        currentTime: 30,
         lives: 3,
         level: 1,
         contErros: 0,
     },
 };
+
+const jwt = require('jsonwebtoken');
+const secretKey = 'eLM4iaa2h|SM9Zp';
+
+// Gera um token JWT
+function generateToken() {
+    return jwt.sign({}, secretKey, { expiresIn: '1h' });
+}
+
+let authToken = generateToken();
 
 // Função para tocar som
 function playSound(audioName) {
@@ -58,7 +68,7 @@ function randomSquare() {
         state.values.lives--;
         state.view.lives.textContent = state.values.lives;
         state.values.contErros = 0;
-        if (state.values.lives <= 0) gameOver(); // Corrigido para <= 0
+        if (state.values.lives <= 0) gameOver();
     }
 }
 
@@ -80,7 +90,7 @@ function addListenerHitBox() {
             } else {
                 state.values.lives--;
                 state.view.lives.textContent = state.values.lives;
-                if (state.values.lives <= 0) gameOver(); // Corrigido para <= 0
+                if (state.values.lives <= 0) gameOver();
                 playSound("buzzer.mp3");
             }
         });
@@ -90,12 +100,8 @@ function addListenerHitBox() {
 function addKeyboardListenerHitBox() {
     document.addEventListener("keydown", (event) => {
         const keyPressed = event.key;
-        
-        if (!/^[1-9]$/.test(keyPressed)) return; 
-        
-        const squareHitPosition = state.values.hitPosition;
-
-        if (keyPressed === squareHitPosition) {
+        if (!/^[1-9]$/.test(keyPressed)) return;
+        if (keyPressed === state.values.hitPosition) {
             state.values.result += state.values.pontAcert;
             state.view.score.textContent = state.values.result;
             state.values.hitPosition = null;
@@ -111,7 +117,6 @@ function addKeyboardListenerHitBox() {
     });
 }
 
-
 function newLevel() {
     if (state.values.lives > 0) {
         const levelIncrement = state.values.lives <= 5 ? 1 : state.values.lives <= 9 ? 5 : 10;
@@ -124,28 +129,23 @@ function newLevel() {
     }
 }
 
-const jwt = require('jsonwebtoken');
-const secretKey = 'eLM4iaa2h|SM9Zp';
-
-// Gera um token JWT (exemplo com payload fictício)
-const authToken = jwt.sign({}, secretKey, { expiresIn: '1h' }); // Token válido por 1 hora
-
-console.log(authToken);
-
 // Função para salvar a pontuação do jogador
 function saveScore(nome, level, score) {
     const scoreData = { nome, level, score };
 
     fetch('https://app-gestao-backend.vercel.app/auth/RscoresDR', {
         method: 'POST',
-        headers: { 
+        headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}` // Usa o token JWT gerado
+            'Authorization': `Bearer ${authToken}`
         },
         body: JSON.stringify(scoreData)
     })
     .then(response => {
-        if (!response.ok) throw new Error('Erro ao salvar a pontuação');
+        if (!response.ok) {
+            console.error('Erro de resposta:', response.status, response.statusText);
+            throw new Error('Erro ao salvar a pontuação');
+        }
         return response.json();
     })
     .then(data => {
@@ -168,40 +168,31 @@ function displayScores() {
     fetch('https://app-gestao-backend.vercel.app/auth/CscoresDR', {
         method: 'GET',
         headers: {
-            'Authorization': `Bearer ${authToken}` // Adiciona o token no cabeçalho
+            'Authorization': `Bearer ${authToken}`
         }
     })
     .then(response => {
-        if (!response.ok) {
-            throw new Error("Erro na resposta da rede.");
-        }
+        if (!response.ok) throw new Error("Erro na resposta da rede.");
         return response.json();
     })
     .then(data => {
         const scoresTableBody = document.getElementById("scores-table").querySelector("tbody");
-        scoresTableBody.innerHTML = ""; 
-
+        scoresTableBody.innerHTML = "";
         if (Array.isArray(data.scores) && data.scores.length > 0) {
             data.scores.forEach(score => {
                 const row = document.createElement("tr");
-
                 const nameCell = document.createElement("td");
                 nameCell.textContent = score.nome;
-
                 const levelCell = document.createElement("td");
                 levelCell.textContent = score.level;
-
                 const scoreCell = document.createElement("td");
                 scoreCell.textContent = score.score;
-
                 row.appendChild(nameCell);
                 row.appendChild(levelCell);
                 row.appendChild(scoreCell);
-
                 scoresTableBody.appendChild(row);
             });
         } else {
-            console.error("Nenhuma pontuação disponível:", data);
             scoresTableBody.innerHTML = "<tr><td colspan='3'>Nenhuma pontuação encontrada.</td></tr>";
         }
     })
@@ -211,25 +202,22 @@ function displayScores() {
 window.addEventListener('load', displayScores);
 
 function gameOver() {
-    // Limpa o intervalo do contador de tempo e do movimento do inimigo
     clearInterval(state.values.timeid);
     clearInterval(state.values.timerId);
-    
     alert(`Game Over! Você chegou no level: ${state.values.level} com pontuação de ${state.values.result} pontos`);
-
     const playerName = prompt("Digite seu nome para salvar sua pontuação:");
-    if (playerName) {
-        saveScore(playerName, state.values.level, state.values.result);
-    }
+    if (playerName) saveScore(playerName, state.values.level, state.values.result);
     document.getElementById("Modal").style.display = "flex";
     state.view.startButton.disabled = false;
-	
+    resetGameState();
+}
+
+function resetGameState() {
     state.values.lives = 3;
     state.values.level = 1;
     state.values.result = 0;
     state.values.contErros = 0;
     state.values.currentTime = 30;
-
     state.view.lives.textContent = state.values.lives;
     state.view.timeLeft.textContent = state.values.currentTime;
     state.view.score.textContent = state.values.result;
@@ -241,22 +229,15 @@ function startGame() {
     state.view.lives.textContent = state.values.lives;
     state.view.score.textContent = state.values.result;
     state.view.level.textContent = state.values.level;
-    
     displayScores();
     moveEnemy();
     addListenerHitBox();
     addKeyboardListenerHitBox();
-    
-    // Inicia o contador de tempo uma única vez
     if (!state.values.timerId) {
         state.values.timerId = setInterval(countDown, 1000);
     }
-
     state.view.startButton.disabled = true;
     document.getElementById("Modal").style.display = "none";
 }
 
 state.view.startButton.addEventListener("click", startGame);
-
-state.view.startButton.addEventListener("click", startGame);
-
