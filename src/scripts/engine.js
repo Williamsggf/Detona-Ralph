@@ -6,7 +6,7 @@ const state = {
         score: document.querySelector('#score'),
         level: document.querySelector('#level'),
         lives: document.querySelector('#lives'),
-        startButton: document.getElementById('start-button') // Referência ao botão Start
+        startButton: document.getElementById('start-button')
     },
     values: {
         timeid: null,
@@ -18,7 +18,7 @@ const state = {
         lives: 3,
         level: 1,
         contErros: 0,
-        authToken: null // Armazenará o token JWT
+        authToken: null
     },
 };
 
@@ -110,44 +110,42 @@ function addListenerHitBox() {
 }
 
 // Função para salvar a pontuação do jogador
-function saveScore(nome, level, score) {
+async function saveScore(nome, level, score) {
     const scoreData = { nome, level, score };
 
-    fetch('https://app-gestao-backend.vercel.app/auth/RscoresDR', {
-        method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${state.values.authToken}` // Adiciona o token JWT
-        },
-        body: JSON.stringify(scoreData)
-    })
-    .then(response => {
+    try {
+        const response = await fetch('https://app-gestao-backend.vercel.app/auth/RscoresDR', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${state.values.authToken}`
+            },
+            body: JSON.stringify(scoreData)
+        });
+
         if (!response.ok) throw new Error('Erro ao salvar a pontuação');
-        return response.json();
-    })
-    .then(data => {
+
         alert("Pontuação salva com sucesso!");
-        displayScores();
+        await displayScores();
         reloadPage();
-    })
-    .catch(error => console.error('Erro ao salvar a pontuação:', error));
+    } catch (error) {
+        console.error('Erro ao salvar a pontuação:', error);
+    }
 }
 
 // Função para exibir as pontuações
-function displayScores() {
-    fetch('https://app-gestao-backend.vercel.app/auth/CscoresDR', {
-        method: 'GET',
-        headers: { 
-            'Authorization': `Bearer ${state.values.authToken}` // Adiciona o token JWT
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error("Erro na resposta da rede.");
-        }
-        return response.json();
-    })
-    .then(data => {
+async function displayScores() {
+    try {
+        const response = await fetch('https://app-gestao-backend.vercel.app/auth/CscoresDR', {
+            method: 'GET',
+            headers: { 
+                'Authorization': `Bearer ${state.values.authToken}`
+            }
+        });
+
+        if (!response.ok) throw new Error("Erro na resposta da rede.");
+        
+        const data = await response.json();
         const scoresTableBody = document.getElementById("scores-table").querySelector("tbody");
         scoresTableBody.innerHTML = ""; 
 
@@ -171,19 +169,17 @@ function displayScores() {
                 scoresTableBody.appendChild(row);
             });
         } else {
-            console.error("Nenhuma pontuação disponível:", data);
             scoresTableBody.innerHTML = "<tr><td colspan='3'>Nenhuma pontuação encontrada.</td></tr>";
         }
-    })
-    .catch(error => console.error('Erro ao carregar as pontuações:', error));
+    } catch (error) {
+        console.error('Erro ao carregar as pontuações:', error);
+    }
 }
 
-window.addEventListener('load', () => {
-
+window.addEventListener('load', async () => {
     const username = 'Detona';
-    if (username) {
-        login(username).then(displayScores);
-    }
+    await login(username);
+    await displayScores();
 });
 
 // Função para iniciar o jogo
@@ -196,9 +192,7 @@ function startGame() {
     displayScores();
     moveEnemy();
     addListenerHitBox();
-    addKeyboardListenerHitBox();
     
-    // Inicia o contador de tempo uma única vez
     if (!state.values.timerId) {
         state.values.timerId = setInterval(countDown, 1000);
     }
