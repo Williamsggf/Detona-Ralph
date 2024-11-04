@@ -159,47 +159,47 @@ function reloadPage() {
 
 // Exibe a lista de pontuações
 function displayScores() {
-       fetch('https://app-gestao-backend.vercel.app/auth/CscoresDR', {
+    fetch('https://app-gestao-backend.vercel.app/auth/CscoresDR', {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${authToken}` // Adiciona o token no cabeçalho
         }
     })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Erro na resposta da rede.");
-            }
-            return response.json();
-        })
-        .then(data => {
-            const scoresTableBody = document.getElementById("scores-table").querySelector("tbody");
-            scoresTableBody.innerHTML = ""; 
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Erro na resposta da rede.");
+        }
+        return response.json();
+    })
+    .then(data => {
+        const scoresTableBody = document.getElementById("scores-table").querySelector("tbody");
+        scoresTableBody.innerHTML = ""; 
 
-            if (Array.isArray(data.scores) && data.scores.length > 0) {
-                data.scores.forEach(score => {
-                    const row = document.createElement("tr");
+        if (Array.isArray(data.scores) && data.scores.length > 0) {
+            data.scores.forEach(score => {
+                const row = document.createElement("tr");
 
-                    const nameCell = document.createElement("td");
-                    nameCell.textContent = score.nome;
+                const nameCell = document.createElement("td");
+                nameCell.textContent = score.nome;
 
-                    const levelCell = document.createElement("td");
-                    levelCell.textContent = score.level;
+                const levelCell = document.createElement("td");
+                levelCell.textContent = score.level;
 
-                    const scoreCell = document.createElement("td");
-                    scoreCell.textContent = score.score;
+                const scoreCell = document.createElement("td");
+                scoreCell.textContent = score.score;
 
-                    row.appendChild(nameCell);
-                    row.appendChild(levelCell);
-                    row.appendChild(scoreCell);
+                row.appendChild(nameCell);
+                row.appendChild(levelCell);
+                row.appendChild(scoreCell);
 
-                    scoresTableBody.appendChild(row);
-                });
-            } else {
-                console.error("Nenhuma pontuação disponível:", data);
-                scoresTableBody.innerHTML = "<tr><td colspan='3'>Nenhuma pontuação encontrada.</td></tr>";
-            }
-        })
-        .catch(error => console.error('Erro ao carregar as pontuações:', error));
+                scoresTableBody.appendChild(row);
+            });
+        } else {
+            console.error("Nenhuma pontuação disponível:", data);
+            scoresTableBody.innerHTML = "<tr><td colspan='3'>Nenhuma pontuação encontrada.</td></tr>";
+        }
+    })
+    .catch(error => console.error('Erro ao carregar as pontuações:', error));
 }
 
 window.addEventListener('load', displayScores);
