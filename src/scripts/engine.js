@@ -159,7 +159,12 @@ function reloadPage() {
 
 // Exibe a lista de pontuações
 function displayScores() {
-    fetch('https://app-gestao-backend.vercel.app/auth/CscoresDR')
+       fetch('https://app-gestao-backend.vercel.app/auth/CscoresDR', {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${authToken}` // Adiciona o token no cabeçalho
+        }
+    })
         .then(response => {
             if (!response.ok) {
                 throw new Error("Erro na resposta da rede.");
