@@ -128,7 +128,7 @@ const jwt = require('jsonwebtoken');
 const secretKey = 'eLM4iaa2h|SM9Zp';
 
 // Gera um token JWT (exemplo com payload fictício)
-const authToken = jwt.sign(secretKey, { expiresIn: '1h' }); // Token válido por 1 hora
+const authToken = jwt.sign({}, secretKey, { expiresIn: '1h' }); // Token válido por 1 hora
 
 console.log(authToken);
 
