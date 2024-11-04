@@ -34,7 +34,7 @@ function initializeGame() {
     state.view.startButton = document.getElementById('start-button');
     
     // Inicializa token JWT (substitua pela sua forma de obtenção real)
-    authToken = 'seu-token-obtido-do-backend';
+    authToken = 'eLM4iaa2h|SM9Zp';
 
     // Definir listeners e exibir pontuações
     state.view.startButton.addEventListener("click", startGame);
