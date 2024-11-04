@@ -200,25 +200,33 @@ function saveScore(name, level, score) {
 }
 
 function displayScores() {
-    fetch('https://app-gestao-backend.vercel.app/auth/CscoresDR', {
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${authToken}` }
-    })
-    .then(response => response.json())
-    .then(data => {
-        const scoresTableBody = document.getElementById("scores-table").querySelector("tbody");
-        scoresTableBody.innerHTML = "";
-        if (Array.isArray(data.scores) && data.scores.length > 0) {
-            data.scores.forEach(score => {
-                const row = document.createElement("tr");
-                row.innerHTML = `<td>${score.name}</td><td>${score.level}</td><td>${score.score}</td>`;
-                scoresTableBody.appendChild(row);
-            });
-        } else {
-            scoresTableBody.innerHTML = "<tr><td colspan='3'>Nenhuma pontuação encontrada.</td></tr>";
-        }
-    })
-    .catch(error => console.error('Erro ao carregar pontuações:', error));
+     if (!authToken || !isValidJWT(authToken)) {
+    console.error("Missing or invalid JWT token");
+    return;
+  }
+
+  fetch('https://app-gestao-backend.vercel.app/auth/CscoresDR', {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${authToken}`,
+      'Content-Type': 'application/json' // Might be required by your backend
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    const scoresTableBody = document.getElementById("scores-table").querySelector("tbody");
+    scoresTableBody.innerHTML = "";
+    if (Array.isArray(data.scores) && data.scores.length > 0) {
+      data.scores.forEach(score => {
+        const row = document.createElement("tr");
+        row.innerHTML = `<td>${score.name}</td><td>${score.level}</td><td>${score.score}</td>`;
+        scoresTableBody.appendChild(row);
+      });
+    } else {
+      scoresTableBody.innerHTML = "<tr><td colspan='3'>Nenhuma pontuação encontrada.</td></tr>";
+    }
+  })
+  .catch(error => console.error('Erro ao carregar pontuações:', error));
 }
 
 // Inicia o Jogo ao Carregar a Página
