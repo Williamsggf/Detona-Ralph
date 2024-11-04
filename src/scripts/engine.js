@@ -1,138 +1,187 @@
+// Estado e Inicialização do Jogo
 const state = {
     view: {
-        squares: document.querySelectorAll('.square'),
-        enemy: document.querySelector('.enemy'),
-        timeLeft: document.querySelector("#time-left"),
-        score: document.querySelector('#score'),
-        level: document.querySelector('#level'),
-        lives: document.querySelector('#lives'),
-        startButton: document.getElementById('start-button')
+        squares: [],
+        timeLeft: null,
+        score: null,
+        level: null,
+        lives: null,
+        startButton: null
     },
     values: {
-        timeid: null,
+        timeId: null,
         gameVelocity: 3000,
-        hitPosition: 0,
-        result: 0,
-        pontAcert: 1,
-        currentTime: 30,
+        hitPosition: null,
+        score: 0,
+        pointsPerHit: 1,
+        remainingTime: 30,
         lives: 3,
         level: 1,
-        contErros: 0,
+        errorCount: 0,
+        timerId: null
     },
 };
 
-const jwt = require('jsonwebtoken');
-const secretKey = 'eLM4iaa2h|SM9Zp';
+let authToken = null; // Token JWT será inicializado depois do DOM carregar
 
-// Gera um token JWT
-function generateToken() {
-    return jwt.sign({}, secretKey, { expiresIn: '1h' });
+// Inicialização do Jogo e Elementos do DOM
+function initializeGame() {
+    state.view.squares = document.querySelectorAll('.square');
+    state.view.timeLeft = document.querySelector("#time-left");
+    state.view.score = document.querySelector('#score');
+    state.view.level = document.querySelector('#level');
+    state.view.lives = document.querySelector('#lives');
+    state.view.startButton = document.getElementById('start-button');
+    
+    // Inicializa token JWT (substitua pela sua forma de obtenção real)
+    authToken = 'seu-token-obtido-do-backend';
+
+    // Definir listeners e exibir pontuações
+    state.view.startButton.addEventListener("click", startGame);
+    displayScores();
 }
 
-let authToken = generateToken();
-
-// Função para tocar som
+// Funções de Utilidade
 function playSound(audioName) {
-    let audio = new Audio(`./src/audios/${audioName}`);
+    const audio = new Audio(`./src/audios/${audioName}`);
     audio.volume = 0.1;
     audio.play();
 }
 
-// Contador de tempo
+// Lógica de Tempo
 function countDown() {
-    if (state.values.currentTime > 0) {
-        state.values.currentTime--;
-        state.view.timeLeft.textContent = state.values.currentTime;
+    if (state.values.remainingTime > 0) {
+        state.values.remainingTime--;
+        state.view.timeLeft.textContent = state.values.remainingTime;
     } else {
-        newLevel();
+        advanceLevel();
     }
 }
 
-// Função para remover inimigo
+// Controle do Inimigo
 function removeEnemy() {
-    state.view.squares.forEach((square) => {
-        square.classList.remove("enemy");
-    });
+    state.view.squares.forEach(square => square.classList.remove("enemy"));
 }
 
-// Função para gerar posição aleatória do inimigo
 function randomSquare() {
     removeEnemy();
-    let randomNumber = Math.floor(Math.random() * state.view.squares.length);
-    let randomSquare = state.view.squares[randomNumber];
-    randomSquare.classList.add("enemy");
-    state.values.hitPosition = randomSquare.id;
-    state.values.contErros++;
-    if (state.values.contErros > 3) {
+    const randomIndex = Math.floor(Math.random() * state.view.squares.length);
+    const selectedSquare = state.view.squares[randomIndex];
+    selectedSquare.classList.add("enemy");
+    state.values.hitPosition = selectedSquare.id;
+    state.values.errorCount++;
+    checkErrors();
+}
+
+function checkErrors() {
+    if (state.values.errorCount > 3) {
         playSound('buzzer.mp3');
         state.values.lives--;
         state.view.lives.textContent = state.values.lives;
-        state.values.contErros = 0;
+        state.values.errorCount = 0;
         if (state.values.lives <= 0) gameOver();
     }
 }
 
 function moveEnemy() {
-    clearInterval(state.values.timeid);
-    state.values.timeid = setInterval(randomSquare, state.values.gameVelocity);
+    clearInterval(state.values.timeId);
+    state.values.timeId = setInterval(randomSquare, state.values.gameVelocity);
 }
 
-function addListenerHitBox() {
-    state.view.squares.forEach((square) => {
+// Manipulação de Eventos
+function addMouseHitListener() {
+    state.view.squares.forEach(square => {
         square.addEventListener("mousedown", () => {
             if (square.id === state.values.hitPosition) {
-                state.values.result += state.values.pontAcert;
-                state.view.score.textContent = state.values.result;
-                state.values.hitPosition = null;
-                state.values.contErros = 0;
-                playSound('hit.m4a');
-                removeEnemy();
+                processHit();
             } else {
-                state.values.lives--;
-                state.view.lives.textContent = state.values.lives;
-                if (state.values.lives <= 0) gameOver();
-                playSound("buzzer.mp3");
+                processMiss();
             }
         });
     });
 }
 
-function addKeyboardListenerHitBox() {
-    document.addEventListener("keydown", (event) => {
-        const keyPressed = event.key;
-        if (!/^[1-9]$/.test(keyPressed)) return;
-        if (keyPressed === state.values.hitPosition) {
-            state.values.result += state.values.pontAcert;
-            state.view.score.textContent = state.values.result;
-            state.values.hitPosition = null;
-            state.values.contErros = 0;
-            playSound('hit.m4a');
-            removeEnemy();
+function addKeyboardHitListener() {
+    document.addEventListener("keydown", event => {
+        if (/^[1-9]$/.test(event.key) && event.key === state.values.hitPosition) {
+            processHit();
         } else {
-            state.values.lives--;
-            state.view.lives.textContent = state.values.lives;
-            if (state.values.lives <= 0) gameOver();
-            playSound("buzzer.mp3");
+            processMiss();
         }
     });
 }
 
-function newLevel() {
+function processHit() {
+    state.values.score += state.values.pointsPerHit;
+    state.view.score.textContent = state.values.score;
+    state.values.hitPosition = null;
+    state.values.errorCount = 0;
+    playSound('hit.m4a');
+    removeEnemy();
+}
+
+function processMiss() {
+    state.values.lives--;
+    state.view.lives.textContent = state.values.lives;
+    playSound("buzzer.mp3");
+    if (state.values.lives <= 0) gameOver();
+}
+
+// Avanço de Nível
+function advanceLevel() {
     if (state.values.lives > 0) {
-        const levelIncrement = state.values.lives <= 5 ? 1 : state.values.lives <= 9 ? 5 : 10;
         state.values.gameVelocity = Math.max(500, state.values.gameVelocity - 250);
-        state.values.level += levelIncrement;
+        state.values.level++;
         state.view.level.textContent = state.values.level;
-        state.values.pontAcert = 1 + state.values.level;
-        state.values.currentTime = 30;
+        state.values.pointsPerHit = 1 + state.values.level;
+        state.values.remainingTime = 30;
         moveEnemy();
     }
 }
 
-// Função para salvar a pontuação do jogador
-function saveScore(nome, level, score) {
-    const scoreData = { nome, level, score };
+// Final do Jogo
+function gameOver() {
+    clearInterval(state.values.timeId);
+    clearInterval(state.values.timerId);
+    alert(`Game Over! Nível alcançado: ${state.values.level}, Pontuação: ${state.values.score}`);
+    const playerName = prompt("Digite seu nome para salvar a pontuação:");
+    if (playerName) saveScore(playerName, state.values.level, state.values.score);
+    resetGame();
+}
 
+// Reset do Estado do Jogo
+function resetGame() {
+    state.values.lives = 3;
+    state.values.level = 1;
+    state.values.score = 0;
+    state.values.errorCount = 0;
+    state.values.remainingTime = 30;
+    state.view.lives.textContent = state.values.lives;
+    state.view.timeLeft.textContent = state.values.remainingTime;
+    state.view.score.textContent = state.values.score;
+    state.view.level.textContent = state.values.level;
+    state.view.startButton.disabled = false;
+    document.getElementById("Modal").style.display = "flex";
+}
+
+// Início do Jogo
+function startGame() {
+    state.view.timeLeft.textContent = state.values.remainingTime;
+    state.view.lives.textContent = state.values.lives;
+    state.view.score.textContent = state.values.score;
+    state.view.level.textContent = state.values.level;
+    displayScores();
+    moveEnemy();
+    addMouseHitListener();
+    addKeyboardHitListener();
+    state.values.timerId = setInterval(countDown, 1000);
+    state.view.startButton.disabled = true;
+    document.getElementById("Modal").style.display = "none";
+}
+
+// Salvando e Exibindo Pontuações
+function saveScore(name, level, score) {
+    const scoreData = { name, level, score };
     fetch('https://app-gestao-backend.vercel.app/auth/RscoresDR', {
         method: 'POST',
         headers: {
@@ -141,103 +190,36 @@ function saveScore(nome, level, score) {
         },
         body: JSON.stringify(scoreData)
     })
-    .then(response => {
-        if (!response.ok) {
-            console.error('Erro de resposta:', response.status, response.statusText);
-            throw new Error('Erro ao salvar a pontuação');
-        }
-        return response.json();
-    })
-    .then(data => {
+    .then(response => response.json())
+    .then(() => {
         alert("Pontuação salva com sucesso!");
         displayScores();
-        reloadPage();
+        resetGame();
     })
-    .catch(error => console.error('Erro ao salvar a pontuação:', error));
+    .catch(error => console.error('Erro ao salvar pontuação:', error));
 }
 
-// Função para recarregar a página
-function reloadPage() {
-    setTimeout(() => {
-        location.reload();
-    }, 1000);
-}
-
-// Exibe a lista de pontuações
 function displayScores() {
     fetch('https://app-gestao-backend.vercel.app/auth/CscoresDR', {
         method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${authToken}`
-        }
+        headers: { 'Authorization': `Bearer ${authToken}` }
     })
-    .then(response => {
-        if (!response.ok) throw new Error("Erro na resposta da rede.");
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
         const scoresTableBody = document.getElementById("scores-table").querySelector("tbody");
         scoresTableBody.innerHTML = "";
         if (Array.isArray(data.scores) && data.scores.length > 0) {
             data.scores.forEach(score => {
                 const row = document.createElement("tr");
-                const nameCell = document.createElement("td");
-                nameCell.textContent = score.nome;
-                const levelCell = document.createElement("td");
-                levelCell.textContent = score.level;
-                const scoreCell = document.createElement("td");
-                scoreCell.textContent = score.score;
-                row.appendChild(nameCell);
-                row.appendChild(levelCell);
-                row.appendChild(scoreCell);
+                row.innerHTML = `<td>${score.name}</td><td>${score.level}</td><td>${score.score}</td>`;
                 scoresTableBody.appendChild(row);
             });
         } else {
             scoresTableBody.innerHTML = "<tr><td colspan='3'>Nenhuma pontuação encontrada.</td></tr>";
         }
     })
-    .catch(error => console.error('Erro ao carregar as pontuações:', error));
+    .catch(error => console.error('Erro ao carregar pontuações:', error));
 }
 
-window.addEventListener('load', displayScores);
-
-function gameOver() {
-    clearInterval(state.values.timeid);
-    clearInterval(state.values.timerId);
-    alert(`Game Over! Você chegou no level: ${state.values.level} com pontuação de ${state.values.result} pontos`);
-    const playerName = prompt("Digite seu nome para salvar sua pontuação:");
-    if (playerName) saveScore(playerName, state.values.level, state.values.result);
-    document.getElementById("Modal").style.display = "flex";
-    state.view.startButton.disabled = false;
-    resetGameState();
-}
-
-function resetGameState() {
-    state.values.lives = 3;
-    state.values.level = 1;
-    state.values.result = 0;
-    state.values.contErros = 0;
-    state.values.currentTime = 30;
-    state.view.lives.textContent = state.values.lives;
-    state.view.timeLeft.textContent = state.values.currentTime;
-    state.view.score.textContent = state.values.result;
-    state.view.level.textContent = state.values.level;
-}
-
-function startGame() {
-    state.view.timeLeft.textContent = state.values.currentTime;
-    state.view.lives.textContent = state.values.lives;
-    state.view.score.textContent = state.values.result;
-    state.view.level.textContent = state.values.level;
-    displayScores();
-    moveEnemy();
-    addListenerHitBox();
-    addKeyboardListenerHitBox();
-    if (!state.values.timerId) {
-        state.values.timerId = setInterval(countDown, 1000);
-    }
-    state.view.startButton.disabled = true;
-    document.getElementById("Modal").style.display = "none";
-}
-
-state.view.startButton.addEventListener("click", startGame);
+// Inicia o Jogo ao Carregar a Página
+window.addEventListener('DOMContentLoaded', initializeGame);
