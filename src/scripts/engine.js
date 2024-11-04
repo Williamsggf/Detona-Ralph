@@ -124,7 +124,12 @@ function newLevel() {
     }
 }
 
-const authToken = 'eLM4iaa2h|SM9Zp';
+const jwt = require('jsonwebtoken');
+const secretKey = 'eLM4iaa2h|SM9Zp';
+
+// Gera um token JWT (exemplo com payload fictício)
+const payload = { username: 'exemplo' }; // Inclua os dados necessários
+const authToken = jwt.sign(payload, secretKey, { expiresIn: '1h' }); // Token válido por 1 hora
 
 console.log(authToken);
 
