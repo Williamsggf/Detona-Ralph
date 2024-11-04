@@ -34,7 +34,7 @@ async function login(username) {
         if (!response.ok) {
             throw new Error('Erro ao realizar login');
         }
-
+ 
         const data = await response.json();
         state.values.authToken = data.token;
         alert('Login realizado com sucesso!');
