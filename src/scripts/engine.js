@@ -124,13 +124,18 @@ function newLevel() {
     }
 }
 
+const authToken = 'eLM4iaa2h|SM9Zp';
+
 // Função para salvar a pontuação do jogador
 function saveScore(nome, level, score) {
     const scoreData = { nome, level, score };
 
     fetch('https://app-gestao-backend.vercel.app/auth/RscoresDR', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}` // Adiciona o token no cabeçalho
+        },
         body: JSON.stringify(scoreData)
     })
     .then(response => {
